@@ -1,6 +1,9 @@
 import re
 # читаем адресную книгу в формате CSV в список contacts_list
 import csv
+
+PHONE_INDEX = 5
+
 with open("phonebook_raw.csv", encoding="utf-8") as f:
     rows = csv.reader(f, delimiter=",")
     contacts_list = list(rows)
@@ -10,9 +13,9 @@ with open("phonebook_raw.csv", encoding="utf-8") as f:
 #Задание 1
 for contact in contacts_list[1:]:
     parts = " ".join(contact[:3]).split()
-    contact[0] = parts[0]
-    contact[1] = parts[1] if len(parts) > 1 else ""
-    contact[2] = parts[2] if len(parts) > 2 else ""
+    contact[0] = parts[0].strip()
+    contact[1] = parts[1].strip() if len(parts) > 1 else ""
+    contact[2] = parts[2].strip() if len(parts) > 2 else ""
 
 #Задание 2
 pattern_list = [
@@ -23,19 +26,19 @@ pattern_list = [
 ]
 
 for contact in contacts_list[1:]:
-    if contact[5]:
+    if contact[PHONE_INDEX]:
         # Обрабатываем основной номер
         for pattern in pattern_list:
-            new_phone = re.sub(pattern, r"+7(\2)\3-\4-\5", contact[5])
-            if new_phone != contact[5]:  # Если замена произошла
-                contact[5] = new_phone
+            new_phone = re.sub(pattern, r"+7(\2)\3-\4-\5", contact[PHONE_INDEX])
+            if new_phone != contact[PHONE_INDEX]:  # Если замена произошла
+                contact[PHONE_INDEX] = new_phone
                 break
 
         # Обрабатываем добавочный номер (убираем лишние пробелы и скобки)
-        contact[5] = re.sub(
+        contact[PHONE_INDEX] = re.sub(
             r"\s*\(?\s*доб\.\s*(\d+)\s*\)?",  # Ищем "доб." с пробелами и скобками
             r" доб.\1",  # Заменяем на " доб.0792"
-            contact[5]
+            contact[PHONE_INDEX]
         ).strip()  # Удаляем пробелы в начале/конце, если есть
 
 
@@ -85,7 +88,7 @@ def merge_records(data):
 
     return merged
 
-contacts_list =  merge_records(contacts_list)
+contacts_list =  sorted(merge_records(contacts_list[1:]))
 
 # TODO 2: сохраните получившиеся данные в другой файл
 # код для записи файла в формате CSV
